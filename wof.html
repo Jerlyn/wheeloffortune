@@ -46,7 +46,7 @@
         h1 {
             font-size: clamp(2rem, 5vw, 2.5rem);
             font-weight: 700;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem; /* Increased margin for more space */
             color: var(--primary-color);
             letter-spacing: -0.02em;
             text-shadow: 0 4px 6px rgba(0,0,0,0.2);
@@ -95,7 +95,7 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            font-size: 1.5rem;
+            font-size: clamp(1rem, 4vw, 1.5rem); /* Responsive font size */
             font-weight: 600;
             transform-origin: 50% 50%;
             z-index: 3;
@@ -103,16 +103,16 @@
         }
 
         /* Number positions for the wheel segments */
-        .number-1 { transform: translate(-50%, -50%) rotate(18deg) translateY(-175px); }
-        .number-2 { transform: translate(-50%, -50%) rotate(54deg) translateY(-175px); }
-        .number-3 { transform: translate(-50%, -50%) rotate(90deg) translateY(-175px); }
-        .number-4 { transform: translate(-50%, -50%) rotate(126deg) translateY(-175px); }
-        .number-5 { transform: translate(-50%, -50%) rotate(162deg) translateY(-175px); }
-        .number-6 { transform: translate(-50%, -50%) rotate(198deg) translateY(-175px); }
-        .number-7 { transform: translate(-50%, -50%) rotate(234deg) translateY(-175px); }
-        .number-8 { transform: translate(-50%, -50%) rotate(270deg) translateY(-175px); }
-        .number-9 { transform: translate(-50%, -50%) rotate(306deg) translateY(-175px); }
-        .number-10 { transform: translate(-50%, -50%) rotate(342deg) translateY(-175px); }
+        .number-1 { transform: translate(-50%, -50%) rotate(18deg) translateY(-18vh); }
+        .number-2 { transform: translate(-50%, -50%) rotate(54deg) translateY(-18vh); }
+        .number-3 { transform: translate(-50%, -50%) rotate(90deg) translateY(-18vh); }
+        .number-4 { transform: translate(-50%, -50%) rotate(126deg) translateY(-18vh); }
+        .number-5 { transform: translate(-50%, -50%) rotate(162deg) translateY(-18vh); }
+        .number-6 { transform: translate(-50%, -50%) rotate(198deg) translateY(-18vh); }
+        .number-7 { transform: translate(-50%, -50%) rotate(234deg) translateY(-18vh); }
+        .number-8 { transform: translate(-50%, -50%) rotate(270deg) translateY(-18vh); }
+        .number-9 { transform: translate(-50%, -50%) rotate(306deg) translateY(-18vh); }
+        .number-10 { transform: translate(-50%, -50%) rotate(342deg) translateY(-18vh); }
 
         .pointer {
             position: absolute;
@@ -150,6 +150,7 @@
             min-height: 44px; /* Touch target size for accessibility */
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             animation: none;
+            width: 100%; /* Ensure button takes full width */
         }
 
         /* Pulsing animation for the button when it's ready */
@@ -187,10 +188,12 @@
 
         .game-info {
             display: flex;
-            justify-content: center;
-            gap: 1rem;
+            flex-direction: column; /* Stack elements vertically */
+            gap: 1rem; /* Space between elements */
             margin-top: 1rem;
             flex-wrap: wrap;
+            width: 100%; /* Make the container full width to center its content */
+            align-items: center; /* Center the counters horizontally */
         }
 
         .attempts-counter, .highest-number {
@@ -201,7 +204,8 @@
             background-color: #2a3441;
             border-radius: 8px;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-            min-width: 180px;
+            width: 100%; /* Make them full width */
+            text-align: center;
         }
 
         .count-value {
@@ -281,7 +285,7 @@
 </head>
 <body>
     <div class="container">
-        <h1> Wheel of Fortune</h1>
+        <h1>Wheel of Fortune</h1>
         
         <div class="wheel-container">
             <div class="pointer" aria-hidden="true"></div>
@@ -301,11 +305,12 @@
             </div>
         </div>
 
-        <button class="spin-button ready" id="spinButton" aria-describedby="attemptsCounter">
-            🎲 SPIN THE WHEEL! 🎲
-        </button>
+       
         
         <div class="game-info">
+            <button class="spin-button ready" id="spinButton" aria-describedby="attemptsCounter">
+                🎲 SPIN THE WHEEL! 🎲
+            </button>
             <div class="attempts-counter" id="attemptsCounter" role="status" aria-live="polite">
                 Attempts remaining: <span class="count-value" id="attemptsCountValue">5</span>
             </div>
