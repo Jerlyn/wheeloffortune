@@ -103,16 +103,16 @@
         }
 
         /* Number positions for the wheel segments */
-        .number-1 { transform: translate(-50%, -50%) rotate(18deg) translateY(-500%); }
-        .number-2 { transform: translate(-50%, -50%) rotate(54deg) translateY(-500%); }
-        .number-3 { transform: translate(-50%, -50%) rotate(90deg) translateY(-500%); }
-        .number-4 { transform: translate(-50%, -50%) rotate(126deg) translateY(-500%); }
-        .number-5 { transform: translate(-50%, -50%) rotate(162deg) translateY(-500%); }
-        .number-6 { transform: translate(-50%, -50%) rotate(198deg) translateY(-500%); }
-        .number-7 { transform: translate(-50%, -50%) rotate(234deg) translateY(-500%); }
-        .number-8 { transform: translate(-50%, -50%) rotate(270deg) translateY(-500%); }
-        .number-9 { transform: translate(-50%, -50%) rotate(306deg) translateY(-500%); }
-        .number-10 { transform: translate(-50%, -50%) rotate(342deg) translateY(-500%); }
+        .number-1 { transform: translate(-50%, -50%) rotate(18deg) translateY(-175px); }
+        .number-2 { transform: translate(-50%, -50%) rotate(54deg) translateY(-175px); }
+        .number-3 { transform: translate(-50%, -50%) rotate(90deg) translateY(-175px); }
+        .number-4 { transform: translate(-50%, -50%) rotate(126deg) translateY(-175px); }
+        .number-5 { transform: translate(-50%, -50%) rotate(162deg) translateY(-175px); }
+        .number-6 { transform: translate(-50%, -50%) rotate(198deg) translateY(-175px); }
+        .number-7 { transform: translate(-50%, -50%) rotate(234deg) translateY(-175px); }
+        .number-8 { transform: translate(-50%, -50%) rotate(270deg) translateY(-175px); }
+        .number-9 { transform: translate(-50%, -50%) rotate(306deg) translateY(-175px); }
+        .number-10 { transform: translate(-50%, -50%) rotate(342deg) translateY(-175px); }
 
         .pointer {
             position: absolute;
@@ -453,7 +453,7 @@
                 wheel.setAttribute('aria-label', `Game complete. Final result: ${selectedNumber}. Highest number achieved: ${highestNumber}`);
             } else {
                 spinButton.disabled = false;
-                spinButton.textContent = '🎲 SPIN THE WHEEL! 🎲';
+                spinButton.textContent = '🎲 SPIN THE WHEEL! �';
                 spinButton.setAttribute('aria-label', 'Spin the wheel to get a random number');
                 spinButton.classList.add('ready');
             }
