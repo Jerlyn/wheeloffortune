@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wheel of Fortune</title>
+    <style>
+        /* CSS Custom Properties for easy theming */
+        :root {
+            --bg-color: #1a2332;
+            --text-color: #FFFFFF;
+            --primary-color: #7ED321;
+            --secondary-color: #4A90E2;
+            --button-text-color: #1a2332;
+            --pointer-color: #FFFFFF;
+            --border-color: #FFFFFF;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-color);
+            padding: 2rem;
+            text-align: center;
+            overflow: hidden; /* Prevent horizontal overflow from confetti */
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+            letter-spacing: -0.02em;
+            text-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .wheel-container {
+            position: relative;
+            width: clamp(280px, 70vw, 400px);
+            height: clamp(280px, 70vw, 400px);
+            margin: 2rem auto;
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            border: 4px solid var(--border-color);
+            transition: transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background: conic-gradient(
+                var(--secondary-color) 0deg 36deg,
+                var(--primary-color) 36deg 72deg,
+                var(--secondary-color) 72deg 108deg,
+                var(--primary-color) 108deg 144deg,
+                var(--secondary-color) 144deg 180deg,
+                var(--primary-color) 180deg 216deg,
+                var(--secondary-color) 216deg 252deg,
+                var(--primary-color) 252deg 288deg,
+                var(--secondary-color) 288deg 324deg,
+                var(--primary-color) 324deg 360deg
+            );
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .wheel-numbers {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        .number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            font-size: 1.5rem;
+            font-weight: 600;
+            transform-origin: 50% 50%;
+            z-index: 3;
+            color: var(--text-color); /* Ensure high contrast */
+        }
+
+        /* Number positions for the wheel segments */
+        .number-1 { transform: translate(-50%, -50%) rotate(18deg) translateY(-500%); }
+        .number-2 { transform: translate(-50%, -50%) rotate(54deg) translateY(-500%); }
+        .number-3 { transform: translate(-50%, -50%) rotate(90deg) translateY(-500%); }
+        .number-4 { transform: translate(-50%, -50%) rotate(126deg) translateY(-500%); }
+        .number-5 { transform: translate(-50%, -50%) rotate(162deg) translateY(-500%); }
+        .number-6 { transform: translate(-50%, -50%) rotate(198deg) translateY(-500%); }
+        .number-7 { transform: translate(-50%, -50%) rotate(234deg) translateY(-500%); }
+        .number-8 { transform: translate(-50%, -50%) rotate(270deg) translateY(-500%); }
+        .number-9 { transform: translate(-50%, -50%) rotate(306deg) translateY(-500%); }
+        .number-10 { transform: translate(-50%, -50%) rotate(342deg) translateY(-500%); }
+
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid var(--pointer-color);
+            z-index: 10;
+            filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+            animation: pointer-bounce 1s infinite;
+        }
+
+        /* Animation for the pointer to make it look ready */
+        @keyframes pointer-bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        .spin-button {
+            background-color: var(--primary-color);
+            color: var(--button-text-color);
+            border: 2px solid transparent;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            font-family: inherit;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 1rem;
+            min-height: 44px; /* Touch target size for accessibility */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            animation: none;
+        }
+
+        /* Pulsing animation for the button when it's ready */
+        .spin-button.ready {
+            animation: button-pulse 2s infinite;
+        }
+
+        @keyframes button-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(126, 211, 33, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(126, 211, 33, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(126, 211, 33, 0); }
+        }
+
+        .spin-button:hover:not(:disabled) {
+            background-color: #6BB91A;
+            transform: translateY(-1px);
+        }
+
+        .spin-button:focus {
+            outline: 2px solid var(--border-color);
+            outline-offset: 2px;
+        }
+
+        .spin-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .spin-button:disabled {
+            background-color: #6C757D;
+            color: #FFFFFF;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .attempts-counter, .highest-number {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            background-color: #2a3441;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            min-width: 180px;
+        }
+
+        .count-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-color);
+            display: block;
+            margin-top: 0.25rem;
+        }
+
+        .confetti {
+            position: fixed;
+            width: clamp(5px, 1vw, 15px);
+            height: clamp(5px, 1vw, 15px);
+            background: #7ED321;
+            border-radius: 50%;
+            animation: confetti-fall 3s linear forwards;
+            opacity: 0; /* Start invisible */
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Message box for the result */
+        .result-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            background-color: #2a3441;
+            color: var(--text-color);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            border: 2px solid var(--primary-color);
+            z-index: 20;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            animation: result-pop 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+        }
+
+        .result-box.show {
+            display: flex;
+        }
+
+        @keyframes result-pop {
+            from { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .result-box h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .wheel { border-width: 6px; }
+            .spin-button { border: 3px solid var(--border-color); }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            .wheel, .spin-button.ready, .result-box {
+                transition: none !important;
+                animation: none !important;
+            }
+            .confetti { display: none; }
+            .pointer { animation: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎰 Wheel of Fortune 🎰</h1>
+        
+        <div class="wheel-container">
+            <div class="pointer" aria-hidden="true"></div>
+            <div class="wheel" id="wheel" role="img" aria-label="Spinning wheel with numbers 1 through 10">
+                <div class="wheel-numbers">
+                    <div class="number number-1" aria-hidden="true">1</div>
+                    <div class="number number-2" aria-hidden="true">2</div>
+                    <div class="number number-3" aria-hidden="true">3</div>
+                    <div class="number number-4" aria-hidden="true">4</div>
+                    <div class="number number-5" aria-hidden="true">5</div>
+                    <div class="number number-6" aria-hidden="true">6</div>
+                    <div class="number number-7" aria-hidden="true">7</div>
+                    <div class="number number-8" aria-hidden="true">8</div>
+                    <div class="number number-9" aria-hidden="true">9</div>
+                    <div class="number number-10" aria-hidden="true">10</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="spin-button ready" id="spinButton" aria-describedby="attemptsCounter">
+            🎲 SPIN THE WHEEL! 🎲
+        </button>
+        
+        <div class="game-info">
+            <div class="attempts-counter" id="attemptsCounter" role="status" aria-live="polite">
+                Attempts remaining: <span class="count-value" id="attemptsCountValue">5</span>
+            </div>
+            <div class="highest-number" id="highestNumber" role="status" aria-live="polite">
+                Highest number so far: <span class="count-value" id="highestNumberValue">None</span>
+            </div>
+        </div>
+        
+        <!-- Message box for displaying results -->
+        <div class="result-box" id="resultBox" role="alert" aria-live="assertive" aria-hidden="true">
+            <h2 id="resultHeading"></h2>
+            <p id="resultText"></p>
+        </div>
+    </div>
+
+    <script>
+        // --- State Variables ---
+        let isSpinning = false;
+        let selectedNumber = null;
+        let attemptsRemaining = 5;
+        let highestNumber = 0;
+        
+        // --- DOM Elements ---
+        const spinButton = document.getElementById('spinButton');
+        const wheel = document.getElementById('wheel');
+        const attemptsCountValue = document.getElementById('attemptsCountValue');
+        const highestNumberValue = document.getElementById('highestNumberValue');
+        const resultBox = document.getElementById('resultBox');
+        const resultHeading = document.getElementById('resultHeading');
+        const resultText = document.getElementById('resultText');
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize button state
+            updateButtonState();
+            // Keyboard support for space and enter keys
+            spinButton.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    spinWheel();
+                }
+            });
+            // Click event listener
+            spinButton.addEventListener('click', spinWheel);
+        });
+
+        // --- Core Functions ---
+
+        /**
+         * The main function to initiate the wheel spin.
+         * Disables the button, calculates the rotation, and waits for the animation to end.
+         */
+        function spinWheel() {
+            if (isSpinning || attemptsRemaining <= 0) return;
+            
+            startSpin();
+            
+            // Generate a random number between 1 and 10
+            const randomNumber = Math.floor(Math.random() * 10) + 1;
+            selectedNumber = randomNumber;
+            
+            // Calculate the rotation needed to land on the number
+            const segmentAngle = 36;
+            const segmentCenter = (randomNumber - 1) * segmentAngle + segmentAngle / 2;
+            const targetAngle = 360 - segmentCenter;
+            const extraRotations = (Math.floor(Math.random() * 4) + 2) * 360;
+            const totalRotation = extraRotations + targetAngle;
+            
+            // Apply the rotation with a smooth transition
+            wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            wheel.style.transform = `rotate(${totalRotation}deg)`;
+            
+            // End the spin after the animation duration
+            setTimeout(endSpin, 4000);
+        }
+
+        /**
+         * Sets the game state to 'spinning'.
+         */
+        function startSpin() {
+            isSpinning = true;
+            spinButton.disabled = true;
+            spinButton.textContent = '🎲 SPINNING... 🎲';
+            spinButton.setAttribute('aria-label', 'Wheel is currently spinning');
+            spinButton.classList.remove('ready');
+            
+            // Force a reflow to ensure the reset is applied
+            wheel.style.transition = 'none';
+            wheel.style.transform = 'rotate(0deg)';
+            wheel.offsetHeight; 
+            
+            wheel.setAttribute('aria-label', `Wheel spinning to select a number`);
+            hideResultBox();
+        }
+
+        /**
+         * Handles the end of the spin animation.
+         */
+        function endSpin() {
+            isSpinning = false;
+            attemptsRemaining--;
+
+            updateScores();
+            updateDisplay();
+            updateButtonState();
+            
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                createConfetti();
+            }
+        }
+        
+        /**
+         * Updates the highest number.
+         */
+        function updateScores() {
+            if (selectedNumber > highestNumber) {
+                highestNumber = selectedNumber;
+            }
+        }
+
+        /**
+         * Updates the UI text and displays the result box.
+         */
+        function updateDisplay() {
+            attemptsCountValue.textContent = attemptsRemaining;
+            highestNumberValue.textContent = highestNumber === 0 ? 'None' : highestNumber;
+
+            // Display the result message box
+            resultHeading.textContent = `You landed on ${selectedNumber}!`;
+            resultText.textContent = `Your highest number is now ${highestNumber}.`;
+            showResultBox();
+            
+            wheel.setAttribute('aria-label', `Wheel stopped on number ${selectedNumber}`);
+            console.log(`Selected number: ${selectedNumber}, Highest so far: ${highestNumber}`);
+        }
+
+        /**
+         * Updates the button state based on attempts remaining.
+         */
+        function updateButtonState() {
+            if (attemptsRemaining <= 0) {
+                spinButton.disabled = true;
+                spinButton.textContent = '🎲 GAME OVER! 🎲';
+                spinButton.setAttribute('aria-label', 'Game over, no more attempts remaining');
+                wheel.setAttribute('aria-label', `Game complete. Final result: ${selectedNumber}. Highest number achieved: ${highestNumber}`);
+            } else {
+                spinButton.disabled = false;
+                spinButton.textContent = '🎲 SPIN THE WHEEL! 🎲';
+                spinButton.setAttribute('aria-label', 'Spin the wheel to get a random number');
+                spinButton.classList.add('ready');
+            }
+        }
+
+        /**
+         * Shows the result message box with a pop animation.
+         */
+        function showResultBox() {
+            resultBox.classList.add('show');
+            resultBox.setAttribute('aria-hidden', 'false');
+            setTimeout(hideResultBox, 3000);
+        }
+
+        /**
+         * Hides the result message box.
+         */
+        function hideResultBox() {
+            resultBox.classList.remove('show');
+            resultBox.setAttribute('aria-hidden', 'true');
+        }
+
+        /**
+         * Creates a confetti effect.
+         */
+        function createConfetti() {
+            const colors = ['#7ED321', '#4A90E2', '#FFFFFF', '#2a3441', '#FFD700', '#FF6347'];
+            const numConfetti = 50;
+            for (let i = 0; i < numConfetti; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.width = Math.random() * 8 + 5 + 'px';
+                    confetti.style.height = confetti.style.width;
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    confetti.setAttribute('aria-hidden', 'true');
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => { confetti.remove(); }, 3000);
+                }, i * 50);
+            }
+        }
+    </script>
+</body>
+</html>
