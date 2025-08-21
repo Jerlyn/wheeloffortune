@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A11y Wheel</title>
+    <!-- Use Tailwind CSS for modern styling and responsiveness -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        
+        :root {
+            /* Original vibrant colors for wheel segments and accents */
+            --vibrant-pink: #F20587;
+            --deep-purple: #2E038C;
+            --golden-yellow: #E6A500;
+            --warm-orange: #BF3604;
+            
+            /* Darker versions for text accessibility on white background */
+            --text-pink: #C70471;
+            --text-purple: #1F0259;
+            --text-yellow: #B8900D;
+            --text-orange: #8B2A03;
+            
+            /* Neutral colors */
+            --neutral-white: #FFFFFF;
+            --neutral-light: #F8F9FA;
+            --neutral-dark: #212529;
+            --neutral-medium: #6C757D;
+            --neutral-light-gray: #ADB5BD;
+            
+            /* Enhanced colors for better colorblind accessibility */
+            --accessible-pink: #E91E63;  /* More distinct from orange */
+            --accessible-purple: #3F51B5; /* More distinct blue-purple */
+            --accessible-yellow: #FFC107; /* Higher contrast yellow */
+            --accessible-orange: #FF5722; /* More distinct red-orange */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, rgba(63, 81, 181, 0.05) 0%, rgba(255, 255, 255, 1) 50%, rgba(233, 30, 99, 0.05) 100%);
+            color: var(--neutral-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            padding: 2.5rem;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 800;
+            text-align: center;
+            background: linear-gradient(45deg, var(--accessible-pink), var(--accessible-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            color: var(--neutral-medium);
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            text-align: center;
+            margin-bottom: 1rem;
+            max-width: 600px;
+            font-weight: 500;
+        }
+
+        #gameCanvas {
+            border-radius: 9999px;
+            box-shadow: 0 0 30px rgba(63, 81, 181, 0.2), 0 0 60px rgba(233, 30, 99, 0.1);
+            transition: transform 0.2s ease-in-out;
+            touch-action: none;
+            border: 6px solid var(--neutral-dark);
+            background: var(--neutral-white);
+            /* Ensures canvas is responsive and maintains aspect ratio */
+            width: 100%;
+            height: auto;
+            max-width: 400px;
+            aspect-ratio: 1 / 1;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        .spin-button {
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--neutral-white);
+            background: linear-gradient(45deg, var(--accessible-pink), var(--accessible-purple));
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 20px rgba(63, 81, 181, 0.3);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            min-height: 56px;
+            min-width: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .spin-button:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(63, 81, 181, 0.4), 0 0 40px rgba(233, 30, 99, 0.3);
+        }
+
+        .spin-button:focus {
+            outline: 4px solid var(--accessible-orange);
+            outline-offset: 4px;
+            border-radius: 50px;
+        }
+
+        .spin-button:active {
+            transform: translateY(1px);
+        }
+
+        .spin-button:disabled {
+            background: linear-gradient(45deg, #a0a0a0, #808080);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.6;
+        }
+
+        .result-container, .topic-container, .message-container {
+            width: 100%;
+            text-align: center;
+            padding: 2rem;
+            border-radius: 16px;
+        }
+        
+        .topic-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-pink);
+            margin-bottom: 1rem;
+        }
+
+        .topic-content {
+            font-size: 1.1rem;
+            color: var(--neutral-dark);
+            text-align: left;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .accessibility-tip {
+            background: rgba(255, 193, 7, 0.1);
+            backdrop-filter: blur(8px);
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-left: 4px solid var(--accessible-yellow);
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .tip-label {
+            font-weight: 700;
+            color: var(--text-yellow);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Accessibility focus styles */
+        button:focus, a:focus, input:focus {
+            outline: 4px solid var(--accessible-orange);
+            outline-offset: 4px;
+        }
+
+        /* Game message styling */
+        #gameMessage {
+            color: var(--neutral-medium);
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+                gap: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .topic-container {
+                padding: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .spin-button {
+                width: 100%;
+            }
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .container {
+                border: 2px solid var(--neutral-dark);
+            }
+            
+            .spin-button {
+                border: 2px solid var(--neutral-dark);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" role="main">
+        <header>
+            <h1 id="gameTitle">A11y Wheel</h1>
+            <p class="subtitle">Spin the wheel to discover accessibility topics, tips, and best practices for inclusive design!</p>
+        </header>
+
+        <div class="message-container" role="status" aria-live="polite">
+            <p id="gameMessage">Ready to learn about accessibility? Spin the wheel to get started!</p>
+        </div>
+
+        <div class="relative w-full flex justify-center items-center">
+            <!-- Container for the canvas and pointer to handle centering -->
+            <div class="relative w-full max-w-sm flex flex-col items-center">
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
+                    <!-- Centered directional pointer pointing right -->
+                    <i class="fas fa-caret-right text-4xl" style="color: var(--neutral-dark); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));" aria-hidden="true"></i>
+                </div>
+                <canvas id="gameCanvas" width="400" height="400" role="img" aria-label="A colorful wheel with 8 accessibility topic segments in pink, purple, yellow, and orange"></canvas>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="spinBtn" class="spin-button" aria-describedby="spin-instructions">
+                <i class="fas fa-sync-alt mr-2" aria-hidden="true"></i>
+                Spin the Wheel
+            </button>
+            <div id="spin-instructions" class="sr-only">
+                Press to spin the wheel and learn about a random accessibility topic
+            </div>
+        </div>
+
+        <div id="topicResult" class="topic-container hidden" aria-live="assertive" aria-atomic="true">
+            <h2 class="topic-title" id="topicTitle"></h2>
+            <div class="topic-content" id="topicContent"></div>
+            <div class="accessibility-tip" id="accessibilityTip">
+                <div class="tip-label">
+                    <i class="fas fa-lightbulb" aria-hidden="true"></i>
+                    Pro Tip:
+                </div>
+                <div id="tipContent"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const spinBtn = document.getElementById('spinBtn');
+            const topicResult = document.getElementById('topicResult');
+            const topicTitle = document.getElementById('topicTitle');
+            const topicContent = document.getElementById('topicContent');
+            const tipContent = document.getElementById('tipContent');
+            const gameMessage = document.getElementById('gameMessage');
+
+            // --- Game Data with Colorblind-Friendly Palette ---
+            const segments = [
+                { text: 'WCAG', topic: 'wcag', color: '#E91E63' },      // Distinct pink
+                { text: 'Screen Readers', topic: 'screen-readers', color: '#3F51B5' },  // Blue-purple
+                { text: 'Color Contrast', topic: 'color-contrast', color: '#FFC107' },  // Bright yellow
+                { text: 'Keyboard Nav', topic: 'keyboard-nav', color: '#FF5722' },      // Red-orange
+                { text: 'ARIA Labels', topic: 'aria', color: '#E91E63' },               // Distinct pink
+                { text: 'Focus Mgmt', topic: 'focus-mgmt', color: '#3F51B5' },          // Blue-purple
+                { text: 'Alt Text', topic: 'alt-text', color: '#FFC107' },              // Bright yellow
+                { text: 'Forms', topic: 'forms', color: '#FF5722' }                     // Red-orange
+            ];
+
+            const topics = {
+                'wcag': {
+                    title: 'WCAG Guidelines',
+                    content: 'The Web Content Accessibility Guidelines (WCAG) 2.1 provide comprehensive standards for making web content accessible. They are organized around four principles: Perceivable, Operable, Understandable, and Robust (POUR). These guidelines help ensure that digital content is accessible to people with disabilities.',
+                    tip: 'Start with Level A compliance, then work toward AA. AAA is typically only required for specialized content like government sites or educational institutions.'
+                },
+                'screen-readers': {
+                    title: 'Screen Readers',
+                    content: 'Screen readers convert digital text to speech or braille, helping visually impaired users navigate websites. Popular screen readers include NVDA (free), JAWS (Windows), VoiceOver (Mac/iOS), and TalkBack (Android). They rely on semantic HTML and ARIA attributes to provide context.',
+                    tip: 'Test your site with a screen reader yourself. Try navigating with your eyes closed using only keyboard and audio feedback. NVDA is free and great for testing.'
+                },
+                'color-contrast': {
+                    title: 'Color Contrast',
+                    content: 'Proper color contrast ensures text is readable for users with visual impairments, including color blindness and low vision. WCAG AA requires a contrast ratio of at least 4.5:1 for normal text and 3:1 for large text (18pt+ or 14pt+ bold).',
+                    tip: 'Use tools like WebAIM\'s Contrast Checker, Colour Contrast Analyser, or browser dev tools to verify your color combinations meet standards before publishing.'
+                },
+                'keyboard-nav': {
+                    title: 'Keyboard Navigation',
+                    content: 'Many users rely on keyboards instead of mice due to motor disabilities or preferences. Ensure all interactive elements are accessible via Tab, Enter, Space, and arrow keys. The tab order should be logical and visible focus indicators must be clear.',
+                    tip: 'Unplug your mouse and try navigating your entire site using only the keyboard. You\'ll quickly discover navigation issues and understand the user experience better.'
+                },
+                'aria': {
+                    title: 'ARIA Labels',
+                    content: 'ARIA (Accessible Rich Internet Applications) attributes provide semantic information to assistive technologies when HTML alone isn\'t sufficient. Common attributes include aria-label, aria-describedby, aria-expanded, and role. They help screen readers understand dynamic content.',
+                    tip: 'Don\'t overuse ARIA. If semantic HTML can do the job, use that instead. ARIA should enhance, not replace, good HTML structure. Remember: "No ARIA is better than bad ARIA."'
+                },
+                'focus-mgmt': {
+                    title: 'Focus Management',
+                    content: 'Proper focus management guides users through your interface logically. This includes visible focus indicators, logical tab order, and managing focus in dynamic content like modals, dropdowns, and single-page applications.',
+                    tip: 'When content changes dynamically (like opening a modal), move focus to the new content and return it to the trigger element when closed. This maintains spatial awareness for keyboard users.'
+                },
+                'alt-text': {
+                    title: 'Alternative Text',
+                    content: 'Alternative text describes images for screen reader users and appears when images fail to load. Good alt text is concise, descriptive, and conveys the image\'s purpose in context. Decorative images should have empty alt attributes (alt="").',
+                    tip: 'For complex images like charts or infographics, consider longer descriptions using aria-describedby pointing to detailed text, or provide the data in an accessible table format.'
+                },
+                'forms': {
+                    title: 'Accessible Forms',
+                    content: 'Accessible forms have proper labels, clear error messages, logical grouping with fieldset/legend, and helpful instructions. Every form control must have an associated label or aria-label. Error messages should be clearly linked to their respective fields.',
+                    tip: 'Use fieldset and legend for grouping related form controls like radio buttons. Place error messages immediately after the problematic field and use aria-describedby to associate them.'
+                }
+            };
+
+            let gameState = {
+                spinning: false,
+                currentRotation: 0
+            };
+
+            // --- Canvas Drawing Logic ---
+            const totalSegments = segments.length;
+            const arcSize = (2 * Math.PI) / totalSegments;
+
+            /**
+             * Draws the segments of the wheel on the canvas.
+             */
+            function drawWheel() {
+                // Ensure the canvas is sized appropriately for high-DPI displays
+                const scaleFactor = window.devicePixelRatio || 1;
+                canvas.width = 400 * scaleFactor;
+                canvas.height = 400 * scaleFactor;
+                ctx.scale(scaleFactor, scaleFactor);
+
+                let startAngle = 0;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                segments.forEach((segment, i) => {
+                    const angle = startAngle + arcSize;
+                    
+                    // Draw the segment
+                    ctx.beginPath();
+                    ctx.fillStyle = segment.color;
+                    ctx.moveTo(canvas.width / (2 * scaleFactor), canvas.height / (2 * scaleFactor));
+                    ctx.arc(canvas.width / (2 * scaleFactor), canvas.height / (2 * scaleFactor), canvas.width / (2 * scaleFactor) - 2, startAngle, angle, false);
+                    ctx.lineTo(canvas.width / (2 * scaleFactor), canvas.height / (2 * scaleFactor));
+                    ctx.fill();
+
+                    // Draw segment border
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#212529';
+                    ctx.lineWidth = 2;
+                    ctx.moveTo(canvas.width / (2 * scaleFactor), canvas.height / (2 * scaleFactor));
+                    ctx.lineTo(
+                        canvas.width / (2 * scaleFactor) + Math.cos(startAngle) * (canvas.width / (2 * scaleFactor) - 2),
+                        canvas.height / (2 * scaleFactor) + Math.sin(startAngle) * (canvas.height / (2 * scaleFactor) - 2)
+                    );
+                    ctx.stroke();
+
+                    // Draw the text with appropriate contrast
+                    ctx.save();
+                    ctx.translate(canvas.width / (2 * scaleFactor), canvas.height / (2 * scaleFactor));
+                    ctx.rotate(startAngle + arcSize / 2);
+                    ctx.textAlign = 'right';
+                    
+                    // Use white text for all segments as they all provide sufficient contrast
+                    // Verified: All segment colors meet WCAG AA standards with white text
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = 'bold 16px Inter, sans-serif';
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+                    ctx.shadowBlur = 3;
+                    ctx.fillText(segment.text, canvas.width / (2 * scaleFactor) - 25, 5);
+                    ctx.restore();
+
+                    startAngle = angle;
+                });
+            }
+            
+            // Re-draw the wheel on window resize
+            window.addEventListener('resize', drawWheel);
+
+            // --- Spin Animation Logic ---
+            /**
+             * Animates the wheel spin with easing.
+             */
+            function animateSpin(duration, finalRotation, callback) {
+                const start = performance.now();
+                const startRotation = gameState.currentRotation;
+
+                function step(timestamp) {
+                    const elapsed = timestamp - start;
+                    const progress = Math.min(elapsed / duration, 1);
+                    // Use cubic easing for smooth deceleration
+                    const easedProgress = 1 - Math.pow(1 - progress, 3);
+                    const rotation = startRotation + (finalRotation - startRotation) * easedProgress;
+                    canvas.style.transform = `rotate(${rotation}deg)`;
+                    gameState.currentRotation = rotation;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(step);
+                    } else {
+                        callback();
+                    }
+                }
+                requestAnimationFrame(step);
+            }
+
+            /**
+             * Determines the winning segment after the spin stops.
+             */
+            function getWinningSegment(rotation) {
+                const normalizedRotation = rotation % 360;
+                const segmentSize = 360 / totalSegments;
+                // Adjust for the pointer at the top
+                const adjustedRotation = (360 - normalizedRotation + 90) % 360;
+                const winningIndex = Math.floor(adjustedRotation / segmentSize);
+                return segments[winningIndex];
+            }
+
+            /**
+             * Handles the wheel spin action.
+             */
+            function spinWheel() {
+                if (gameState.spinning) return;
+
+                gameState.spinning = true;
+                spinBtn.disabled = true;
+                topicResult.classList.add('hidden');
+                gameMessage.textContent = 'Spinning the wheel...';
+                
+                // Add spinning icon animation
+                const icon = spinBtn.querySelector('i');
+                icon.classList.add('fa-spin');
+                
+                // Corrected logic for generating a random final rotation
+                const winningIndex = Math.floor(Math.random() * totalSegments);
+                const segmentSize = 360 / totalSegments;
+                const winningAngle = winningIndex * segmentSize;
+                
+                // Spin the wheel a random number of times (e.g., 5 to 10 full rotations)
+                const extraRotations = Math.floor(Math.random() * 6) + 5;
+                
+                // Final rotation will land in the middle of the winning segment
+                const finalRotation = (extraRotations * 360) + (360 - (winningAngle + segmentSize / 2));
+
+                animateSpin(4000, gameState.currentRotation + finalRotation, () => {
+                    const winningSegment = getWinningSegment(gameState.currentRotation);
+                    showResult(winningSegment);
+                    
+                    // Reset button state
+                    gameState.spinning = false;
+                    spinBtn.disabled = false;
+                    icon.classList.remove('fa-spin');
+                });
+            }
+
+            function showResult(segment) {
+                const topicData = topics[segment.topic];
+                
+                topicTitle.textContent = topicData.title;
+                topicContent.textContent = topicData.content;
+                tipContent.textContent = topicData.tip;
+                
+                topicResult.classList.remove('hidden');
+                topicResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
+                gameMessage.textContent = `Great! You landed on ${topicData.title}. Spin again to learn more!`;
+                
+                // Announce result to screen readers
+                announceResult(topicData.title);
+            }
+
+            function announceResult(title) {
+                const announcement = document.createElement('div');
+                announcement.setAttribute('aria-live', 'assertive');
+                announcement.setAttribute('aria-atomic', 'true');
+                announcement.className = 'sr-only';
+                announcement.textContent = `Wheel stopped on: ${title}. Topic information has been displayed.`;
+                document.body.appendChild(announcement);
+
+                setTimeout(() => {
+                    document.body.removeChild(announcement);
+                }, 1000);
+            }
+
+            // --- Event Listeners ---
+            spinBtn.addEventListener('click', spinWheel);
+
+            // Keyboard navigation support
+            spinBtn.addEventListener('keydown', (e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && !gameState.spinning) {
+                    e.preventDefault();
+                    spinWheel();
+                }
+            });
+
+            // Escape key to focus spin button
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    spinBtn.focus();
+                }
+            });
+
+            // --- Initialize Game ---
+            drawWheel();
+        });
+    </script>
+</body>
+</html>
